@@ -1,0 +1,39 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Home - Pharmacy Management{% endblock %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">Welcome to Pharmacy Management System</h1>
+    <p class="lead">A simple system to manage drugs and sales in your pharmacy.</p>
+    <hr class="my-4">
+    
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4>Drug Management</h4>
+                </div>
+                <div class="card-body">
+                    <p>Add, update, and manage drug inventory.</p>
+                    <a href="{% url 'drug_list' %}" class="btn btn-info">View All Drugs</a>
+                    <a href="{% url 'add_drug' %}" class="btn btn-success">Add New Drug</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4>Sales Management</h4>
+                </div>
+                <div class="card-body">
+                    <p>Create and manage sales transactions.</p>
+                    <a href="{% url 'sale_list' %}" class="btn btn-info">View All Sales</a>
+                    <a href="{% url 'create_sale' %}" class="btn btn-success">Create New Sale</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

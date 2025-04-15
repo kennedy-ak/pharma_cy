@@ -1,0 +1,367 @@
+{% extends 'app/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create Sale - Pharmacy Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .drug-search-results {
+        position: absolute;
+        width: 100%;
+        max-height: 200px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        z-index: 1000;
+        display: none;
+    }
+    .search-result-item {
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+    .search-result-item:hover {
+        background-color: #f5f5f5;
+    }
+    .sale-items {
+        margin-top: 20px;
+    }
+    .remove-item {
+        cursor: pointer;
+        color: red;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2>Create New Sale</h2>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form id="saleForm" method="post">
+            {% csrf_token %}
+            
+            <!-- Drug Search Section -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Search and Add Drugs</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 position-relative">
+                                    <label for="drugSearch">Search Drug:</label>
+                                    <input type="text" id="drugSearch" class="form-control" placeholder="Type drug name...">
+                                    <div id="searchResults" class="drug-search-results"></div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="drugQty">Quantity:</label>
+                                    <input type="number" id="drugQty" class="form-control" value="1" min="1">
+                                </div>
+                                <div class="col-md-4">
+                                    <label>&nbsp;</label>
+                                    <button type="button" id="addDrugBtn" class="btn btn-success form-control" disabled>Add to Sale</button>
+                                </div>
+                            </div>
+                            
+                            <div id="selectedDrugInfo" class="mt-3" style="display: none;">
+                                <div class="alert alert-info">
+                                    <strong>Selected Drug:</strong> <span id="selectedDrugName"></span> - 
+                                    <strong>Price:</strong> ₵<span id="selectedDrugPrice"></span> - 
+                                    <strong>Available:</strong> <span id="selectedDrugStock"></span> units
+                                    <input type="hidden" id="selectedDrugId">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Payment Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="paymentMethod">Payment Method:</label>
+                                <select name="payment_method" id="paymentMethod" class="form-control" required>
+                                    <option value="">Select payment method</option>
+                                    {% for method in payment_methods %}
+                                    <option value="{{ method.id }}">{{ method.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h4>Total: ₵<span id="grandTotal">0.00</span></h4>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <button type="submit" id="completeSaleBtn" class="btn btn-primary form-control" disabled>Complete Sale</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sale Items Section -->
+            <div class="card sale-items">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Sale Items</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table" id="saleItemsTable">
+                        <thead>
+                            <tr>
+                                <th>Drug</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="saleItems">
+                            <!-- Items will be added here dynamically -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end">Grand Total:</th>
+                                <th>₵<span id="tableTotalAmount">0.00</span></th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div id="noItemsMessage" class="alert alert-warning">
+                        No items added to this sale yet. Use the search above to add drugs.
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Variables to store state
+        let itemCounter = 0;
+        let totalAmount = 0;
+        let selectedDrug = null;
+        
+        // Initialize
+        updateTable();
+        
+        // Drug search functionality
+        $('#drugSearch').on('input', function() {
+            const query = $(this).val().trim();
+            
+            if (query.length < 2) {
+                $('#searchResults').hide();
+                return;
+            }
+            
+            // Make AJAX call to search drugs
+            $.ajax({
+                url: '{% url "search_drugs" %}',
+                data: { 'query': query },
+                dataType: 'json',
+                success: function(data) {
+                    displaySearchResults(data.results);
+                }
+            });
+        });
+        
+        // Display search results
+        function displaySearchResults(results) {
+            const $searchResults = $('#searchResults');
+            $searchResults.empty();
+            
+            if (results.length === 0) {
+                $searchResults.append('<div class="p-2">No drugs found</div>');
+            } else {
+                results.forEach(function(drug) {
+                    $searchResults.append(
+                        `<div class="search-result-item" data-id="${drug.id}" data-name="${drug.name}" 
+                         data-price="${drug.price}" data-stock="${drug.stock_quantity}">
+                            ${drug.name} - ₵${drug.price} (${drug.stock_quantity} in stock)
+                        </div>`
+                    );
+                });
+            }
+            
+            $searchResults.show();
+        }
+        
+        // Handle selecting a drug from search results
+        $(document).on('click', '.search-result-item', function() {
+            selectedDrug = {
+                id: $(this).data('id'),
+                name: $(this).data('name'),
+                price: $(this).data('price'),
+                stock: $(this).data('stock')
+            };
+            
+            // Update the UI
+            $('#selectedDrugName').text(selectedDrug.name);
+            $('#selectedDrugPrice').text(selectedDrug.price);
+            $('#selectedDrugStock').text(selectedDrug.stock);
+            $('#selectedDrugId').val(selectedDrug.id);
+            $('#selectedDrugInfo').show();
+            
+            // Clear and hide search results
+            $('#searchResults').hide();
+            $('#drugSearch').val('');
+            
+            // Enable add button
+            $('#addDrugBtn').prop('disabled', false);
+        });
+        
+        // Hide search results when clicking elsewhere
+        $(document).on('click', function(event) {
+            if (!$(event.target).closest('#drugSearch, #searchResults').length) {
+                $('#searchResults').hide();
+            }
+        });
+        
+        // Add drug to sale
+        $('#addDrugBtn').on('click', function() {
+            if (!selectedDrug) return;
+            
+            const quantity = parseInt($('#drugQty').val());
+            
+            if (quantity <= 0 || isNaN(quantity)) {
+                alert('Please enter a valid quantity');
+                return;
+            }
+            
+            if (quantity > selectedDrug.stock) {
+                alert('Not enough stock available');
+                return;
+            }
+            
+            // Add item to the sale
+            addItemToSale(selectedDrug, quantity);
+            
+            // Reset selection
+            selectedDrug = null;
+            $('#selectedDrugInfo').hide();
+            $('#drugQty').val(1);
+            $('#addDrugBtn').prop('disabled', true);
+        });
+        
+        // Add item to sale
+        function addItemToSale(drug, quantity) {
+            const itemTotal = drug.price * quantity;
+            
+            // Check if drug already exists in the sale
+            const existingRow = $(`#saleItems tr[data-drug-id="${drug.id}"]`);
+            
+            if (existingRow.length > 0) {
+                // Update existing row
+                const currentQty = parseInt(existingRow.find('.item-qty').text());
+                const newQty = currentQty + quantity;
+                
+                if (newQty > drug.stock) {
+                    alert('Not enough stock available');
+                    return;
+                }
+                
+                const newTotal = drug.price * newQty;
+                
+                existingRow.find('.item-qty').text(newQty);
+                existingRow.find('.item-total').text(newTotal.toFixed(2));
+                existingRow.find('input[name^="quantity_"]').val(newQty);
+                
+                // Update total amount
+                totalAmount = totalAmount - (drug.price * currentQty) + newTotal;
+            } else {
+                // Add new row
+                const newRow = `
+                    <tr data-drug-id="${drug.id}" data-item-id="${itemCounter}">
+                        <td>${drug.name}
+                            <input type="hidden" name="drug_${itemCounter}" value="${drug.id}">
+                        </td>
+                        <td>₵${drug.price}</td>
+                        <td class="item-qty">${quantity}
+                            <input type="hidden" name="quantity_${itemCounter}" value="${quantity}">
+                        </td>
+                        <td>$<span class="item-total">${itemTotal.toFixed(2)}</span></td>
+                        <td>
+                            <span class="remove-item" title="Remove item">
+                                <i class="fas fa-trash"></i> Remove
+                            </span>
+                        </td>
+                    </tr>
+                `;
+                
+                $('#saleItems').append(newRow);
+                itemCounter++;
+                
+                // Update total amount
+                totalAmount += itemTotal;
+            }
+            
+            updateTable();
+        }
+        
+        // Remove item from sale
+        $(document).on('click', '.remove-item', function() {
+            const row = $(this).closest('tr');
+            const itemTotal = parseFloat(row.find('.item-total').text());
+            
+            // Update total amount
+            totalAmount -= itemTotal;
+            
+            // Remove row
+            row.remove();
+            
+            updateTable();
+        });
+        
+        // Update table and totals
+        function updateTable() {
+            // Update displayed totals
+            $('#grandTotal, #tableTotalAmount').text(totalAmount.toFixed(2));
+            
+            // Show/hide empty message
+            if ($('#saleItems tr').length === 0) {
+                $('#noItemsMessage').show();
+                $('#saleItemsTable').hide();
+                $('#completeSaleBtn').prop('disabled', true);
+            } else {
+                $('#noItemsMessage').hide();
+                $('#saleItemsTable').show();
+                $('#completeSaleBtn').prop('disabled', false);
+            }
+        }
+        
+        // Form submission
+        $('#saleForm').on('submit', function(e) {
+            if ($('#saleItems tr').length === 0) {
+                e.preventDefault();
+                alert('Please add at least one item to the sale');
+                return false;
+            }
+            
+            if (!$('#paymentMethod').val()) {
+                e.preventDefault();
+                alert('Please select a payment method');
+                return false;
+            }
+            
+            // Form is valid, it will submit
+            return true;
+        });
+    });
+</script>
+{% endblock %}

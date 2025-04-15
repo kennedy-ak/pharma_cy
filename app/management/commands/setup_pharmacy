@@ -1,0 +1,23 @@
+from django.core.management.base import BaseCommand
+from pharmacy.models import PaymentMethod
+
+class Command(BaseCommand):
+    help = 'Sets up initial data for the pharmacy application'
+
+    def handle(self, *args, **kwargs):
+        self.stdout.write('Setting up initial data for pharmacy application...')
+        
+        # Create payment methods
+        payment_methods = [
+            'Cash',
+            'Credit Card',
+            'Debit Card',
+            'Mobile Payment',
+            'Insurance'
+        ]
+        
+        for method in payment_methods:
+            PaymentMethod.objects.get_or_create(name=method)
+            self.stdout.write(f'Created payment method: {method}')
+        
+        self.stdout.write(self.style.SUCCESS('Setup completed successfully!'))
