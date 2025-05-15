@@ -6,6 +6,11 @@ from django.views.decorators.http import require_POST
 from .models import Drug, Sale, SaleItem, PaymentMethod
 from .forms import DrugForm, SaleForm, SaleItemForm
 
+from django.shortcuts import render
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncDate
+from .models import Sale
+
 def home(request):
     return render(request, 'app/home.html')
 
@@ -137,3 +142,44 @@ def get_drug_info(request, drug_id):
         'stock': drug.stock_quantity
     }
     return JsonResponse(data)
+
+
+
+
+def daily_sales(request):
+    """
+    View to display daily sales statistics
+    """
+    # Group sales by date and calculate totals
+    daily_stats = Sale.objects.annotate(
+        date=TruncDate('transaction_date')
+    ).values('date').annotate(
+        total_sales=Sum('total_amount'),
+        num_transactions=Count('id')
+    ).order_by('-date')
+    
+    return render(request, 'app/daily_sales.html', {
+        'daily_stats': daily_stats
+    })
+
+def monthly_sales(request):
+    """
+    View to display monthly sales statistics
+    """
+    from django.db.models.functions import TruncMonth
+    
+    # Group sales by month and calculate totals
+    monthly_stats = Sale.objects.annotate(
+        month=TruncMonth('transaction_date')
+    ).values('month').annotate(
+        total_sales=Sum('total_amount'),
+        num_transactions=Count('id')
+    ).order_by('-month')
+    
+    return render(request, 'app/monthly_sales.html', {
+        'monthly_stats': monthly_stats
+    })
+
+
+
+

@@ -1,0 +1,42 @@
+{% load custom_filters %}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+    </style>
+</head>
+<body>
+    <h2>Pharmacy Sale Invoice</h2>
+    <p><strong>Sale ID:</strong> {{ sale.id }}</p>
+    <p><strong>Date:</strong> {{ sale.date }}</p>
+    <p><strong>Payment Method:</strong> {{ sale.payment_method.name }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Drug</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in sale.items.all %}
+            <tr>
+                <td>{{ item.drug.name }}</td>
+                <td>₵{{ item.price }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>₵{{ item.price|multiply:item.quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3 style="text-align:right;">Grand Total: ₵{{ sale.total }}</h3>
+</body>
+</html>

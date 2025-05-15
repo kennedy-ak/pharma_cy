@@ -59,6 +59,15 @@
                                 <li><a class="dropdown-item" href="{% url 'create_sale' %}">Create New Sale</a></li>
                             </ul>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="drugsDropdown" role="button" data-bs-toggle="dropdown">
+                                Report
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'daily_sales' %}">Daily Report</a></li>
+                                <li><a class="dropdown-item" href="{% url 'monthly_sales' %}">Monthly Report</a></li>
+                           
+                            </ul>
                     </ul>
                 </div>
             </div>
