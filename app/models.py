@@ -4,6 +4,7 @@
 from django.db import models
 from django.utils import timezone
 
+
 class Drug(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
@@ -26,7 +27,7 @@ class Sale(models.Model):
     payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     
     def __str__(self):
         return f"Sale #{self.id} - {self.transaction_date.strftime('%Y-%m-%d %H:%M')}"
@@ -42,3 +43,21 @@ class SaleItem(models.Model):
     
     def get_total(self):
         return self.price_at_sale * self.quantity
+    
+
+
+class DailySalesSummary(models.Model):
+    date = models.DateField(unique=True)
+    total_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    num_transactions = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"Daily Summary for {self.date}"
+    
+class MonthlySalesSummary(models.Model):
+    month = models.DateField(unique=True)  # store the first day of the month
+    total_sales = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    num_transactions = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"Monthly Summary for {self.month.strftime('%B %Y')}"
