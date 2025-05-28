@@ -3,6 +3,7 @@
 # Create your models here.
 from django.db import models
 from django.utils import timezone
+import random
 
 
 class Drug(models.Model):
@@ -61,3 +62,18 @@ class MonthlySalesSummary(models.Model):
 
     def __str__(self):
         return f"Monthly Summary for {self.month.strftime('%B %Y')}"
+    
+
+
+
+
+class OTPVerification(models.Model):
+    phone_number = models.CharField(max_length=15)
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        if not self.otp_code:
+            self.otp_code = f"{random.randint(100000, 999999)}"
+        super().save(*args, **kwargs)

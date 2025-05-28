@@ -3,17 +3,49 @@ from django.http import JsonResponse
 from django.db.models import Q
 from django.contrib import messages
 from django.views.decorators.http import require_POST
-from .models import Drug, Sale, SaleItem, PaymentMethod
+from .models import Drug, Sale, SaleItem, PaymentMethod, OTPVerification
 from .forms import DrugForm, SaleForm, SaleItemForm
 
 from django.shortcuts import render
 from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
 from .models import Sale
+from .utils import send_sms
 
+
+def request_otp(request):
+    if request.method == 'POST':
+        phone = request.POST.get('phone_number')
+        otp_entry = OTPVerification.objects.create(phone_number=phone)
+        send_sms(phone, f"Your OTP is {otp_entry.otp_code}")
+        print(f"OTP sent to {phone}: {otp_entry.otp_code}")  # For debugging, remove in production
+        request.session['otp_id'] = otp_entry.id
+        return redirect('verify_otp')
+    return render(request, 'app/request_otp.html')
+
+def verify_otp(request):
+    if request.method == 'POST':
+        otp = request.POST.get('otp')
+        otp_id = request.session.get('otp_id')
+        otp_record = OTPVerification.objects.get(id=otp_id)
+
+        if otp_record.otp_code == otp and not otp_record.is_verified:
+            otp_record.is_verified = True
+            otp_record.save()
+            request.session['authenticated'] = True
+            return redirect('home')
+        else:
+            messages.error(request, 'Invalid OTP')
+    
+    return render(request, 'app/verify_otp.html')
+
+
+# def home(request):
+#     return render(request, 'app/home.html')
 def home(request):
+    if not request.session.get('authenticated'):
+        return redirect('request_otp')
     return render(request, 'app/home.html')
-
 # Drug Management Views
 def drug_list(request):
     drugs = Drug.objects.all().order_by('name')

@@ -109,3 +109,9 @@ def download_invoice(request, pk):
     response.write(pdf)
     
     return response
+
+
+# utils.py
+def send_sms(phone_number, message):
+    # Connect to your SMS API here (e.g., Twilio, Hubtel, etc.)
+    print(f"Sending SMS to {phone_number}: {message}")  # placeholder

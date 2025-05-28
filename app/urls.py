@@ -45,6 +45,7 @@ urlpatterns = [
     # API endpoints
     path('api/search-drugs/', views.search_drugs, name='search_drugs'),
     path('api/drug-info/<int:drug_id>/', views.get_drug_info, name='get_drug_info'),
-   
+   path('otp/request/', views.request_otp, name='request_otp'),
+path('otp/verify/', views.verify_otp, name='verify_otp'),
 
 ]
