@@ -26,6 +26,9 @@ from .utils import download_invoice
 
 urlpatterns = [
     path('', views.home, name='home'),
+         path('admin-login/', views.request_otp, name='request_otp'),
+    path('resend-otp/', views.resend_otp, name='resend_otp'),
+    path('logout/', views.logout_view, name='logout'),
     
     # Drug routes
     path('drugs/', views.drug_list, name='drug_list'),
@@ -45,7 +48,7 @@ urlpatterns = [
     # API endpoints
     path('api/search-drugs/', views.search_drugs, name='search_drugs'),
     path('api/drug-info/<int:drug_id>/', views.get_drug_info, name='get_drug_info'),
-   path('otp/request/', views.request_otp, name='request_otp'),
-path('otp/verify/', views.verify_otp, name='verify_otp'),
+#    path('otp/request/', views.request_otp, name='request_otp'),
+# path('otp/verify/', views.verify_otp, name='verify_otp'),
 
 ]

@@ -67,13 +67,64 @@ class MonthlySalesSummary(models.Model):
 
 
 
+# class OTPVerification(models.Model):
+#     phone_number = models.CharField(max_length=15)
+#     otp_code = models.CharField(max_length=6)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     is_verified = models.BooleanField(default=False)
+
+#     def save(self, *args, **kwargs):
+#         if not self.otp_code:
+#             self.otp_code = f"{random.randint(100000, 999999)}"
+#         super().save(*args, **kwargs)
+
+from django.utils import timezone
+from datetime import timedelta
+
+def default_expiry():
+    return timezone.now() + timedelta(minutes=10)
+
+class AdminPhoneNumber(models.Model):
+    """Model to store admin phone numbers for OTP verification"""
+    phone_number = models.CharField(max_length=15, unique=True,default="0557782728")
+    is_active = models.BooleanField(default=True)
+    description = models.CharField(max_length=100, blank=True, help_text="Description of who this number belongs to")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.phone_number} - {self.description}"
+    
+    class Meta:
+        verbose_name = "Admin Phone Number"
+        verbose_name_plural = "Admin Phone Numbers"
+
 class OTPVerification(models.Model):
-    phone_number = models.CharField(max_length=15)
+    admin_phone = models.ForeignKey(AdminPhoneNumber, on_delete=models.CASCADE,default=1)
     otp_code = models.CharField(max_length=6)
     created_at = models.DateTimeField(auto_now_add=True)
     is_verified = models.BooleanField(default=False)
-
+ 
+    expires_at = models.DateTimeField(default=default_expiry)
+    
     def save(self, *args, **kwargs):
         if not self.otp_code:
             self.otp_code = f"{random.randint(100000, 999999)}"
+        
+        # Set expiration time (10 minutes from creation)
+        if not self.expires_at:
+            from django.utils import timezone
+            from datetime import timedelta
+            self.expires_at = timezone.now() + timedelta(minutes=10)
+            
         super().save(*args, **kwargs)
+    
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+    
+    def __str__(self):
+        return f"OTP for {self.admin_phone.phone_number} - {self.otp_code}"
+    
+    class Meta:
+        verbose_name = "OTP Verification"
+        verbose_name_plural = "OTP Verifications"
