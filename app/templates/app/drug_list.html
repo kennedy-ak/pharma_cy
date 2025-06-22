@@ -1,7 +1,5 @@
 {% extends 'app/base.html' %}
-
 {% block title %}Drug Inventory - Pharmacy Management{% endblock %}
-
 {% block content %}
 <div class="row mb-3">
     <div class="col">
@@ -12,10 +10,29 @@
     </div>
 </div>
 
+<!-- Search Bar -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <input type="text" class="form-control" id="drugSearch" placeholder="Search drugs by name or description...">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="text-right">
+            <small class="text-muted">Total drugs: <span id="totalCount">{{ drugs|length }}</span></small>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-striped table-hover">
+            <table class="table table-striped table-hover" id="drugsTable">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -27,9 +44,9 @@
                 </thead>
                 <tbody>
                     {% for drug in drugs %}
-                    <tr>
-                        <td>{{ drug.name }}</td>
-                        <td>{{ drug.description|truncatechars:50 }}</td>
+                    <tr class="drug-row">
+                        <td class="drug-name">{{ drug.name }}</td>
+                        <td class="drug-description">{{ drug.description|truncatechars:50 }}</td>
                         <td>₵{{ drug.price }}</td>
                         <td>{{ drug.stock_quantity }}</td>
                         <td>
@@ -37,13 +54,90 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr>
+                    <tr id="emptyRow">
                         <td colspan="5" class="text-center">No drugs in inventory. <a href="{% url 'add_drug' %}">Add one now</a>.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            <!-- No results message (hidden by default) -->
+            <div id="noResults" class="text-center py-4" style="display: none;">
+                <p class="text-muted">No drugs found matching your search criteria.</p>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('drugSearch');
+    const clearButton = document.getElementById('clearSearch');
+    const drugRows = document.querySelectorAll('.drug-row');
+    const totalCount = document.getElementById('totalCount');
+    const noResults = document.getElementById('noResults');
+    const tableBody = document.querySelector('#drugsTable tbody');
+    const emptyRow = document.getElementById('emptyRow');
+
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        drugRows.forEach(function(row) {
+            const drugName = row.querySelector('.drug-name').textContent.toLowerCase();
+            const drugDescription = row.querySelector('.drug-description').textContent.toLowerCase();
+            
+            if (drugName.includes(searchTerm) || drugDescription.includes(searchTerm)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Update count and show/hide no results message
+        totalCount.textContent = visibleCount;
+        
+        if (visibleCount === 0 && searchTerm !== '' && drugRows.length > 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+
+        // Hide empty row when searching
+        if (emptyRow) {
+            if (searchTerm !== '' && drugRows.length > 0) {
+                emptyRow.style.display = 'none';
+            } else if (searchTerm === '' && drugRows.length === 0) {
+                emptyRow.style.display = '';
+            }
+        }
+    });
+
+    // Clear search functionality
+    clearButton.addEventListener('click', function() {
+        searchInput.value = '';
+        drugRows.forEach(function(row) {
+            row.style.display = '';
+        });
+        totalCount.textContent = drugRows.length;
+        noResults.style.display = 'none';
+        
+        // Show empty row if no drugs exist
+        if (emptyRow && drugRows.length === 0) {
+            emptyRow.style.display = '';
+        }
+        
+        searchInput.focus();
+    });
+
+    // Keyboard shortcut: Ctrl+F to focus search
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'f') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+    });
+});
+</script>
 {% endblock %}
