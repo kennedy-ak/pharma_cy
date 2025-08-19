@@ -10,6 +10,9 @@
     <div class="col-auto">
         <a href="{% url 'sale_list' %}" class="btn btn-secondary">Back to Sales</a>
         <a href="{% url 'create_sale' %}" class="btn btn-primary">Create New Sale</a>
+        <a href="{% url 'download_invoice' pk=sale.id %}" class="btn btn-success">
+            <i class="fas fa-download"></i> Download Invoice PDF
+        </a>
     </div>
 </div>
 

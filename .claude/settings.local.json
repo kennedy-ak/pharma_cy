@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 manage.py makemigrations:*)",
+      "Bash(env/Scripts/python.exe manage.py migrate:*)",
+      "Bash(env/Scripts/python.exe manage.py import_drugs app_drug_export.csv)"
+    ],
+    "deny": []
+  }
+}

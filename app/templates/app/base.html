@@ -40,34 +40,56 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'home' %}">Home</a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="drugsDropdown" role="button" data-bs-toggle="dropdown">
-                                Drugs
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'drug_list' %}">All Drugs</a></li>
-                                <li><a class="dropdown-item" href="{% url 'add_drug' %}">Add New Drug</a></li>
-                           
-                            </ul>
+                        
+                        <!-- Common for both roles -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'drug_list' %}">Drugs</a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="salesDropdown" role="button" data-bs-toggle="dropdown">
-                                Sales
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'sale_list' %}">All Sales</a></li>
-                                <li><a class="dropdown-item" href="{% url 'create_sale' %}">Create New Sale</a></li>
-                            </ul>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'create_sale' %}">New Sale</a>
                         </li>
+                        
+                        <!-- Admin-only features -->
+                        {% if user.is_authenticated and user.is_admin %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="drugsDropdown" role="button" data-bs-toggle="dropdown">
-                                Report
+                            <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                                Admin
                             </a>
                             <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'admin_dashboard' %}">Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{% url 'add_drug' %}">Add Drug</a></li>
+                                <li><a class="dropdown-item" href="{% url 'low_stock_report' %}">Low Stock Alert</a></li>
+                                <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'daily_sales' %}">Daily Report</a></li>
                                 <li><a class="dropdown-item" href="{% url 'monthly_sales' %}">Monthly Report</a></li>
-                           
+                                <li><a class="dropdown-item" href="{% url 'sale_list' %}">All Sales</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/admin/" target="_blank">
+                                    <i class="fas fa-cog me-2"></i>Django Admin
+                                </a></li>
                             </ul>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    
+                    <!-- User info and logout -->
+                    <ul class="navbar-nav ms-auto">
+                        {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                {{ user.username }} ({{ user.get_role_display }})
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#">Profile</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            </ul>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>

@@ -17,74 +17,197 @@ from datetime import datetime
 
 def generate_invoice_pdf(sale):
     buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    doc = SimpleDocTemplate(
+        buffer, 
+        pagesize=letter, 
+        topMargin=0.5*inch,
+        bottomMargin=0.5*inch,
+        leftMargin=0.5*inch,
+        rightMargin=0.5*inch
+    )
     elements = []
     
     # Define styles
     styles = getSampleStyleSheet()
-    title_style = styles["Heading1"]
-    subtitle_style = styles["Heading2"]
-    normal_style = styles["Normal"]
     
-    # Custom styles
-    header_style = ParagraphStyle(
-        'HeaderStyle',
-        parent=styles['Heading1'],
-        fontSize=16,
+    # Enhanced custom styles
+    main_header_style = ParagraphStyle(
+        'MainHeaderStyle',
+        parent=styles['Normal'],
+        fontSize=18,
         alignment=1,  # Center alignment
+        fontName='Helvetica-Bold',
+        textColor=colors.darkblue,
+        spaceAfter=5
     )
     
-    # Add pharmacy name/header
-    elements.append(Paragraph("Pharmacy Management System", header_style))
-    elements.append(Spacer(1, 0.25*inch))
-    elements.append(Paragraph(f"INVOICE #{sale.id}", subtitle_style))
+    pharmacy_name_style = ParagraphStyle(
+        'PharmacyNameStyle',
+        parent=styles['Normal'],
+        fontSize=12,
+        alignment=1,  # Center alignment
+        fontName='Helvetica',
+        textColor=colors.darkgreen,
+        spaceAfter=8
+    )
+    
+    contact_style = ParagraphStyle(
+        'ContactStyle',
+        parent=styles['Normal'],
+        fontSize=10,
+        alignment=1,  # Center alignment
+        fontName='Helvetica',
+        textColor=colors.black,
+        spaceAfter=3
+    )
+    
+    receipt_header_style = ParagraphStyle(
+        'ReceiptHeaderStyle',
+        parent=styles['Normal'],
+        fontSize=10,
+        alignment=0,  # Left alignment
+        fontName='Helvetica-Bold',
+        textColor=colors.darkred,
+        spaceBefore=10,
+        spaceAfter=8
+    )
+    
+    item_style = ParagraphStyle(
+        'ItemStyle',
+        parent=styles['Normal'],
+        fontSize=10,
+        alignment=0,  # Left alignment
+        fontName='Courier',
+        spaceAfter=2
+    )
+    
+    summary_style = ParagraphStyle(
+        'SummaryStyle',
+        parent=styles['Normal'],
+        fontSize=10,
+        alignment=0,  # Left alignment
+        fontName='Courier-Bold',
+        spaceAfter=2
+    )
+    
+    total_style = ParagraphStyle(
+        'TotalStyle',
+        parent=styles['Normal'],
+        fontSize=12,
+        alignment=0,  # Left alignment
+        fontName='Helvetica-Bold',
+        textColor=colors.darkred,
+        spaceBefore=5,
+        spaceAfter=5
+    )
+    
+    payment_style = ParagraphStyle(
+        'PaymentStyle',
+        parent=styles['Normal'],
+        fontSize=10,
+        alignment=0,  # Left alignment
+        fontName='Courier',
+        textColor=colors.darkblue,
+        spaceAfter=2
+    )
+    
+    footer_style = ParagraphStyle(
+        'FooterStyle',
+        parent=styles['Normal'],
+        fontSize=11,
+        alignment=1,  # Center alignment
+        fontName='Helvetica-Bold',
+        textColor=colors.darkgreen,
+        spaceBefore=15,
+        spaceAfter=8
+    )
+    
+    barcode_style = ParagraphStyle(
+        'BarcodeStyle',
+        parent=styles['Normal'],
+        fontSize=14,
+        alignment=1,  # Center alignment
+        fontName='Courier-Bold',
+        textColor=colors.black,
+        spaceBefore=5,
+        spaceAfter=3
+    )
+    
+    # Add a decorative border effect
+    elements.append(Paragraph("=" * 60, contact_style))
+    
+    # Pharmacy Header with enhanced styling
+    elements.append(Paragraph("🏥 PHARMACY", main_header_style))
+    elements.append(Paragraph("Local Pharmacy Shop", pharmacy_name_style))
+    elements.append(Spacer(1, 0.05*inch))
+    
+    # Contact information in a box-like format
+    elements.append(Paragraph("📞 (888) 888 8888", contact_style))
+    elements.append(Paragraph(f"🏪 Store# {sale.id:08d}", contact_style))
+    elements.append(Paragraph("📍 38343, Drugs Road", contact_style))
+    elements.append(Paragraph("   Akporman - Accra, Ghana", contact_style))
+    
+    elements.append(Paragraph("=" * 60, contact_style))
     elements.append(Spacer(1, 0.1*inch))
     
-    # Add sale details
-    elements.append(Paragraph(f"Date: {sale.transaction_date.strftime('%Y-%m-%d %H:%M')}", normal_style))
-    elements.append(Paragraph(f"Payment Method: {sale.payment_method.name if sale.payment_method else 'Unknown'}", normal_style))
-    elements.append(Spacer(1, 0.2*inch))
+    # Transaction details with enhanced formatting
+    cashier_line = f"👤 Cashier: #Admin    📅 {sale.transaction_date.strftime('%m/%d/%Y   %I:%M %p')}"
+    elements.append(Paragraph(cashier_line, receipt_header_style))
+    elements.append(Paragraph("-" * 60, contact_style))
     
-    # Create items table
-    data = [['Drug', 'Quantity', 'Unit Price', 'Total']]
+    # Items section with better formatting
+    elements.append(Paragraph("🛒 PURCHASED ITEMS", receipt_header_style))
+    
+    total_items = 0
     for item in sale.items.all():
-        data.append([
-            item.drug.name,
-            str(item.quantity),
-            f"${item.price_at_sale:.2f}",
-            f"${item.get_total():.2f}"
-        ])
+        total_items += item.quantity
+        # Create a more structured item line
+        item_line = f"{item.quantity}x {item.drug.name:<25} ₵{item.get_total():.2f}"
+        elements.append(Paragraph(item_line, item_style))
     
-    # Add total row
-    data.append(['', '', 'Grand Total:', f"${sale.total_amount:.2f}"])
+    elements.append(Paragraph("-" * 60, contact_style))
     
-    # Create the table
-    table = Table(data, colWidths=[2.5*inch, 1*inch, 1.5*inch, 1.5*inch])
+    # Summary section with enhanced styling
+    from decimal import Decimal
+    subtotal = sale.total_amount
+    local_tax = subtotal * Decimal('0.06')  # 6% local tax
+    sales_tax = subtotal * Decimal('0.03')  # 3% sales tax
+    total = subtotal + local_tax + sales_tax
     
-    # Style the table
-    table_style = TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        ('BACKGROUND', (0, 1), (-1, -2), colors.white),
-        ('GRID', (0, 0), (-1, -2), 1, colors.black),
-        ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
-        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-        ('TOPPADDING', (0, -1), (-1, -1), 12),
-        ('BOTTOMPADDING', (0, -1), (-1, -1), 12),
-        ('GRID', (-2, -1), (-1, -1), 1, colors.black),
-        ('LINEABOVE', (0, -1), (-1, -1), 1, colors.black),
-    ])
-    table.setStyle(table_style)
-    elements.append(table)
+    elements.append(Paragraph("💰 PAYMENT SUMMARY", receipt_header_style))
+    elements.append(Paragraph(f"{total_items} ITEMS    Subtotal      ₵{subtotal:.2f}", summary_style))
+    elements.append(Paragraph(f"            Local Tax (6%) ₵{local_tax:.2f}", summary_style))
+    elements.append(Paragraph(f"            Sales Tax (3%) ₵{sales_tax:.2f}", summary_style))
+    elements.append(Paragraph("=" * 40, summary_style))
+    elements.append(Paragraph(f"            💳 TOTAL       ₵{total:.2f}", total_style))
     
-    # Add footer
-    elements.append(Spacer(1, 0.5*inch))
-    elements.append(Paragraph("Thank you for your purchase!", normal_style))
-    elements.append(Paragraph(f"Invoice generated on: {datetime.now().strftime('%Y-%m-%d %H:%M')}", normal_style))
+    payment_method = sale.payment_method.name if sale.payment_method else 'CASH'
+    elements.append(Paragraph(f"            ✅ Paid by {payment_method.upper()}: ₵{total:.2f}", payment_style))
+    
+    if payment_method.upper() != 'CASH':
+        elements.append(Spacer(1, 0.05*inch))
+        elements.append(Paragraph(f"💳 {payment_method.upper()}  ****-****-****-9999", payment_style))
+        elements.append(Paragraph(f"📱 APP  #{sale.id:07d}", payment_style))
+        elements.append(Paragraph(f"🔗 REF  #{sale.id + 8809521}", payment_style))
+        elements.append(Paragraph("✓ CARD PRESENT", payment_style))
+    
+    elements.append(Spacer(1, 0.05*inch))
+    elements.append(Paragraph(f"💰 Tendered      ₵{sale.amount_tendered:.2f}", payment_style))
+    elements.append(Paragraph(f"💸 Change        ₵{sale.get_change():.2f}", payment_style))
+    
+    elements.append(Paragraph("=" * 60, contact_style))
+    
+    # Enhanced footer
+    elements.append(Paragraph("🙏 THANKS FOR SHOPPING WITH US! 🙏", footer_style))
+    elements.append(Paragraph("Visit us again soon!", contact_style))
+    
+    # Enhanced barcode section
+    elements.append(Spacer(1, 0.1*inch))
+    barcode_number = f"1872442780848082{sale.id}"
+    elements.append(Paragraph("┃┃┃┃ ┃┃┃┃ ┃┃┃┃ ┃┃┃┃", barcode_style))
+    elements.append(Paragraph(barcode_number, contact_style))
+    
+    elements.append(Paragraph("=" * 60, contact_style))
     
     # Build PDF
     doc.build(elements)
@@ -98,6 +221,7 @@ def generate_invoice_pdf(sale):
 def download_invoice(request, pk):
     from .models import Sale
     from django.http import HttpResponse
+    from django.shortcuts import get_object_or_404
     
     sale = get_object_or_404(Sale, pk=pk)
     pdf = generate_invoice_pdf(sale)

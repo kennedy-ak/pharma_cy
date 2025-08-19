@@ -1,6 +1,7 @@
 
 
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from . import views
 from .utils import download_invoice
 
@@ -24,10 +25,15 @@ urlpatterns = [
     path('reports/daily-sales/', views.daily_sales, name='daily_sales'),
     path('reports/monthly-sales/', views.monthly_sales, name='monthly_sales'),
     
+    # Admin dashboard and analytics  
+    path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('low-stock/', views.low_stock_report, name='low_stock_report'),
+    
+    # Authentication
+    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('logout/', views.custom_logout, name='logout'),
+    
     # API endpoints
     path('api/search-drugs/', views.search_drugs, name='search_drugs'),
     path('api/drug-info/<int:drug_id>/', views.get_drug_info, name='get_drug_info'),
-#    path('otp/request/', views.request_otp, name='request_otp'),
-# path('otp/verify/', views.verify_otp, name='verify_otp'),
-
 ]

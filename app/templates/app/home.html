@@ -1,10 +1,185 @@
 {% extends 'app/base.html' %}
 
 {% block content %}
+{% if not user.is_authenticated %}
+<!-- Landing Page for Non-Authenticated Users -->
+<div class="container-fluid bg-light py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold text-primary mb-4">
+                    Modern Pharmacy Management System
+                </h1>
+                <p class="lead mb-4">
+                    Streamline your pharmacy operations with our comprehensive management solution. 
+                    Track inventory, manage sales, generate reports, and maintain optimal stock levels 
+                    with real-time analytics.
+                </p>
+                <div class="mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-pills text-primary fs-3 me-3"></i>
+                                <div>
+                                    <h6 class="mb-0">Inventory Management</h6>
+                                    <small class="text-muted">Track drugs and stock levels</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-chart-line text-success fs-3 me-3"></i>
+                                <div>
+                                    <h6 class="mb-0">Sales Analytics</h6>
+                                    <small class="text-muted">Real-time sales insights</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-users text-info fs-3 me-3"></i>
+                                <div>
+                                    <h6 class="mb-0">Role-Based Access</h6>
+                                    <small class="text-muted">Admin and reception roles</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-exclamation-triangle text-warning fs-3 me-3"></i>
+                                <div>
+                                    <h6 class="mb-0">Low Stock Alerts</h6>
+                                    <small class="text-muted">Automated stock monitoring</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login to System
+                    </a>
+                    <a href="#demo" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-info-circle me-2"></i>View Demo Accounts
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-laptop-medical display-1 text-primary mb-4"></i>
+                    <div class="card shadow">
+                        <div class="card-body">
+                            <h5 class="card-title">System Overview</h5>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="border-end">
+                                        <h3 class="text-primary">{{ total_drugs }}</h3>
+                                        <small class="text-muted">Total Drugs</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border-end">
+                                        <h3 class="text-success">₵{{ total_inventory_worth|floatformat:0 }}</h3>
+                                        <small class="text-muted">Inventory Value</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <h3 class="text-info">{{ recent_sales_today }}</h3>
+                                    <small class="text-muted">Today's Sales</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Demo Accounts Section -->
+<div class="container my-5" id="demo">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <h2>Demo Accounts</h2>
+                <p class="text-muted">Try the system with these pre-configured accounts</p>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card border-primary h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-user-shield me-2"></i>Administrator</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Full access to all features including:</p>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Dashboard and Analytics</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Inventory Management</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Sales Reports</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Low Stock Alerts</li>
+                                <li><i class="fas fa-check text-success me-2"></i>User Management</li>
+                            </ul>
+                            <div class="mt-3">
+                                <strong>Login Credentials:</strong><br>
+                                <code>Username: admin</code><br>
+                                <code>Password: admin123</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-info h-100">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-user me-2"></i>Reception Staff</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Limited access focused on daily operations:</p>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Create New Sales</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Search Drug Inventory</li>
+                                <li><i class="fas fa-check text-success me-2"></i>View Drug Information</li>
+                                <li><i class="fas fa-times text-muted me-2"></i>Reports (Admin Only)</li>
+                                <li><i class="fas fa-times text-muted me-2"></i>Inventory Management</li>
+                            </ul>
+                            <div class="mt-3">
+                                <strong>Login Credentials:</strong><br>
+                                <code>Username: reception</code><br>
+                                <code>Password: reception123</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Authenticated User Dashboard -->
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Pharmacy Management System</h1>
+        <h1>
+            Welcome back, {{ user.username }}!
+            {% if user.is_admin %}
+                <small class="text-muted">(Administrator)</small>
+            {% else %}
+                <small class="text-muted">(Reception Staff)</small>
+            {% endif %}
+        </h1>
+        {% if user.is_authenticated and user.is_admin %}
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-primary">
+                <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+            </a>
+        {% endif %}
     </div>
+    
+    {% if user.is_authenticated and user.is_admin and low_stock_count > 0 %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong>Low Stock Alert:</strong> {{ low_stock_count }} drug(s) are running low on stock.
+        <a href="{% url 'low_stock_report' %}" class="alert-link">View Details</a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
     
     <!-- Inventory Statistics Row -->
     <div class="row mb-4">
@@ -78,7 +253,9 @@
                     </div>
                     <div class="mt-3">
                         <a href="{% url 'create_sale' %}" class="btn btn-sm btn-primary">New Sale</a>
-                        <a href="{% url 'add_drug' %}" class="btn btn-sm btn-secondary">Add Drug</a>
+                        {% if user.is_authenticated and user.is_admin %}
+                            <a href="{% url 'add_drug' %}" class="btn btn-sm btn-secondary">Add Drug</a>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -99,8 +276,12 @@
                         </div>
                     </div>
                     <div class="mt-3">
-                        <a href="{% url 'daily_sales' %}" class="btn btn-sm btn-success">Daily Sales</a>
-                        <a href="{% url 'monthly_sales' %}" class="btn btn-sm btn-info">Monthly Sales</a>
+                        {% if user.is_authenticated and user.is_admin %}
+                            <a href="{% url 'daily_sales' %}" class="btn btn-sm btn-success">Daily Sales</a>
+                            <a href="{% url 'monthly_sales' %}" class="btn btn-sm btn-info">Monthly Sales</a>
+                        {% else %}
+                            <span class="text-muted">Admin access required</span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -142,11 +323,16 @@
                         </div>
                     </div>
                     <div class="mt-3">
-                        <a href="{% url 'sale_list' %}" class="btn btn-sm btn-warning">View Sales</a>
+                        {% if user.is_authenticated and user.is_admin %}
+                            <a href="{% url 'sale_list' %}" class="btn btn-sm btn-warning">View Sales</a>
+                        {% else %}
+                            <span class="text-muted">Admin access required</span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}

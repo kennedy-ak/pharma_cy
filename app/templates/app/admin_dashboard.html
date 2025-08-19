@@ -1,0 +1,226 @@
+{% extends 'app/base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Admin Dashboard</h1>
+        </div>
+    </div>
+
+    <!-- Alerts Row -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            {% if low_stock_count > 0 %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <strong>Low Stock Alert:</strong> {{ low_stock_count }} drug(s) are running low on stock.
+                <a href="{% url 'low_stock_report' %}" class="alert-link">View Details</a>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Today's Sales</h5>
+                    <h2>{{ recent_sales|length }}</h2>
+                    <small>Transactions</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Low Stock Items</h5>
+                    <h2>{{ low_stock_count }}</h2>
+                    <small>Need Restocking</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Top Drugs</h5>
+                    <h2>{{ top_drugs|length }}</h2>
+                    <small>Best Sellers</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Analytics</h5>
+                    <h2>View</h2>
+                    <small>Sales Insights</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Analytics Row -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Peak Sales Hours</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Hour</th>
+                                    <th>Total Sales</th>
+                                    <th>Avg Transaction</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hour in hourly_sales %}
+                                <tr>
+                                    <td>{{ hour.hour_of_day|default:"N/A" }}:00</td>
+                                    <td>₵{{ hour.total_sales|default:0|floatformat:2 }}</td>
+                                    <td>₵{{ hour.avg_transaction_value|default:0|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Day of Week Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Total Sales</th>
+                                    <th>Transactions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for day in weekly_sales %}
+                                <tr>
+                                    <td>{{ day.day_of_week|default:"Unknown" }}</td>
+                                    <td>₵{{ day.total_sales|default:0|floatformat:2 }}</td>
+                                    <td>{{ day.transaction_count|default:0 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Selling Drugs and Recent Sales -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Top Selling Drugs</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Drug Name</th>
+                                    <th>Qty Sold</th>
+                                    <th>Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for drug in top_drugs %}
+                                <tr>
+                                    <td>{{ drug.drug__name }}</td>
+                                    <td>{{ drug.total_quantity }}</td>
+                                    <td>₵{{ drug.total_revenue|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No sales data available</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Today's Recent Sales</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Amount</th>
+                                    <th>Served By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in recent_sales %}
+                                <tr>
+                                    <td>{{ sale.transaction_date|date:"H:i" }}</td>
+                                    <td>₵{{ sale.total_amount|floatformat:2 }}</td>
+                                    <td>{{ sale.served_by.username|default:"Unknown" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No sales today</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'add_drug' %}" class="btn btn-primary me-2">Add New Drug</a>
+                    <a href="{% url 'daily_sales' %}" class="btn btn-info me-2">Daily Reports</a>
+                    <a href="{% url 'monthly_sales' %}" class="btn btn-success me-2">Monthly Reports</a>
+                    <a href="{% url 'low_stock_report' %}" class="btn btn-warning">Low Stock Report</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
