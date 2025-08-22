@@ -90,7 +90,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 WSGI_APPLICATION = 'pharma_cy.wsgi.application'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
-CSRF_TRUSTED_ORIGINS = [
+CSRF_TRUSTED_ORIGINS = ["*",
     "https://stellas-pharmacy-474817267520.europe-west1.run.app",
 ]
 CORS_ALLOWED_ORIGINS = [
@@ -102,24 +102,17 @@ CORS_ALLOWED_ORIGINS = [
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'pharmcy_database',
+        'USER': 'pharmcy_database_user',
+        'PASSWORD': 'fGP5yZ6TvvNvNTT4wahZy5TavJ89h1wR',
+        'HOST': 'dpg-d2j3bu6mcj7s73ejbbi0-a.ohio-postgres.render.com',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require'
+        }
     }
 }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': os.getenv('DB_ENGINE'),
-#         'NAME': os.getenv('DB_NAME'),
-#         'USER': os.getenv('DB_USER'),
-#         'PASSWORD': os.getenv('DB_PASSWORD'),
-#         'HOST': os.getenv('DB_HOST'),
-#         'PORT': os.getenv('DB_PORT'),
-#         'OPTIONS': {
-#             'sslmode': os.getenv('DB_SSLMODE', 'require')
-#         }
-#     }
-# }
 
 
 
