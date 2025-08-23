@@ -103,11 +103,26 @@ CORS_ALLOWED_ORIGINS = [
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://pharmcy_database_user:fGP5yZ6TvvNvNTT4wahZy5TavJ89h1wR@dpg-d2j3bu6mcj7s73ejbbi0-a.ohio-postgres.render.com/pharmcy_database')
 
-DATABASES = {
-    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
-}
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'pharmcy_database',
+            'USER': 'pharmcy_database_user',
+            'PASSWORD': 'fGP5yZ6TvvNvNTT4wahZy5TavJ89h1wR',
+            'HOST': 'dpg-d2j3bu6mcj7s73ejbbi0-a.ohio-postgres.render.com',
+            'PORT': '5432',
+            'OPTIONS': {
+                'sslmode': 'require'
+            }
+        }
+    }
 
 
 
