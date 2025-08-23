@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import dj_database_url
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -90,28 +91,22 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 WSGI_APPLICATION = 'pharma_cy.wsgi.application'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
-CSRF_TRUSTED_ORIGINS = ["*",
+CSRF_TRUSTED_ORIGINS = [
     "https://stellas-pharmacy-474817267520.europe-west1.run.app",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
 CORS_ALLOWED_ORIGINS = [
-    "https://stellas-pharmacy-474817267520.europe-west1.run.app",
+    "*"
 ]
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+DATABASE_URL = os.getenv('DATABASE_URL')
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'pharmcy_database',
-        'USER': 'pharmcy_database_user',
-        'PASSWORD': 'fGP5yZ6TvvNvNTT4wahZy5TavJ89h1wR',
-        'HOST': 'dpg-d2j3bu6mcj7s73ejbbi0-a.ohio-postgres.render.com',
-        'PORT': '5432',
-        'OPTIONS': {
-            'sslmode': 'require'
-        }
-    }
+    'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
 }
 
 
