@@ -24,14 +24,14 @@ import os
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-mkhv_1a7egg7l8d1x$hfq2zf9wautxw=nkdqq42mi_q!b7jlb6'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-change-this')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ["*",
-        'stellas-pharmacy-474817267520.europe-west1.run.app',
-
+ALLOWED_HOSTS = [
+    "*",
+    os.getenv('ALLOWED_HOST_1', ''),
 ]
 
 
@@ -92,9 +92,9 @@ WSGI_APPLICATION = 'pharma_cy.wsgi.application'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CSRF_TRUSTED_ORIGINS = [
-    "https://stellas-pharmacy-474817267520.europe-west1.run.app",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
+    os.getenv('CSRF_TRUSTED_ORIGIN_1', ''),
+    os.getenv('CSRF_TRUSTED_ORIGIN_2', 'http://localhost:8000'),
+    os.getenv('CSRF_TRUSTED_ORIGIN_3', 'http://127.0.0.1:8000'),
 ]
 CORS_ALLOWED_ORIGINS = [
     "*"
@@ -103,7 +103,11 @@ CORS_ALLOWED_ORIGINS = [
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://pharmcy_database_user:fGP5yZ6TvvNvNTT4wahZy5TavJ89h1wR@dpg-d2j3bu6mcj7s73ejbbi0-a.ohio-postgres.render.com/pharmcy_database')
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+# Ensure DATABASE_URL is a string, not bytes
+if isinstance(DATABASE_URL, bytes):
+    DATABASE_URL = DATABASE_URL.decode('utf-8')
 
 if DATABASE_URL:
     DATABASES = {
@@ -112,12 +116,12 @@ if DATABASE_URL:
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'pharmcy_database',
-            'USER': 'pharmcy_database_user',
-            'PASSWORD': 'fGP5yZ6TvvNvNTT4wahZy5TavJ89h1wR',
-            'HOST': 'dpg-d2j3bu6mcj7s73ejbbi0-a.ohio-postgres.render.com',
-            'PORT': '5432',
+            'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
+            'NAME': os.getenv('DB_NAME', 'pharmcy_database'),
+            'USER': os.getenv('DB_USER', 'pharmcy_database_user'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT', '5432'),
             'OPTIONS': {
                 'sslmode': 'require'
             }
