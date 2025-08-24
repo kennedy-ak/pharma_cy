@@ -92,12 +92,14 @@ WSGI_APPLICATION = 'pharma_cy.wsgi.application'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CSRF_TRUSTED_ORIGINS = [
-    os.getenv('CSRF_TRUSTED_ORIGIN_1', ''),
+    os.getenv('CSRF_TRUSTED_ORIGIN_1', 'https://pharma-cy.onrender.com'),
     os.getenv('CSRF_TRUSTED_ORIGIN_2', 'http://localhost:8000'),
     os.getenv('CSRF_TRUSTED_ORIGIN_3', 'http://127.0.0.1:8000'),
 ]
 CORS_ALLOWED_ORIGINS = [
-    "*"
+    "https://pharma-cy.onrender.com",
+    "http://localhost:8000"
+
 ]
 
 # Database
