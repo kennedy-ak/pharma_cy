@@ -26,7 +26,7 @@ COPY . .
 
 # Collect static files
 
-
+RUN python manage.py collectstatic --noinput
 # Expose port
 EXPOSE 8080
 
