@@ -24,14 +24,14 @@ import os
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key-change-this')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = [
     "*",
-    os.getenv('ALLOWED_HOST_1', ''),
+    "https://pharma-cy.onrender.com"
 ]
 
 
@@ -127,7 +127,6 @@ else:
             }
         }
     }
-
 
 
 # Password validation
