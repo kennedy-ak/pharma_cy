@@ -26,9 +26,9 @@ COPY . .
 
 # Collect static files
 
-RUN python manage.py collectstatic --noinput
+
 # Expose port
 EXPOSE 8080
 
 # Start Gunicorn server using pharma_cy.wsgi:application
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "pharma_cy.wsgi:application"]
+CMD ["sh", "-c", "python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:8080 pharma_cy.wsgi:application"]
